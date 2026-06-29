@@ -1,0 +1,9 @@
+.vscode/**
+.gitignore
+**/tsconfig.json
+**/eslint.config.mjs
+**/*.map
+src/**
+node_modules/**
+images/generate-icon.js
+test-logic.js
