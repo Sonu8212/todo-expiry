@@ -2,7 +2,7 @@
   "name": "todo-expiry",
   "displayName": "TODO Expiry",
   "description": "Highlight TODO comments with expiry dates — turns green, yellow, then red as the deadline approaches. Zero config. Works in every language.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publisher": "sonu8212",
   "author": {
     "name": "Sonu"
