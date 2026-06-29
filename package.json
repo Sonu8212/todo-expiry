@@ -9,6 +9,10 @@
   },
   "license": "MIT",
   "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sonu8212/todo-expiry"
+  },
   "engines": {
     "vscode": "^1.80.0"
   },
