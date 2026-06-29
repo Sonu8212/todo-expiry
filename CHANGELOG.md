@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.2] - 2026-06-29
+
+### Changed
+- Added hover tooltip screenshot
+- Expanded README with more details, tips, and comparison table
+
 ## [1.0.1] - 2026-06-29
 
 ### Changed
