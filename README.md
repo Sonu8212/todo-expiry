@@ -139,14 +139,6 @@ The threshold of 7 days is fully configurable.
 
 ---
 
-## Contributing
-
-Found a bug or have a feature idea? Open an issue on [GitHub](https://github.com/Sonu8212/todo-expiry/issues).
-
-Pull requests are welcome!
-
----
-
 ## License
 
 MIT © [Sonu](https://github.com/Sonu8212)

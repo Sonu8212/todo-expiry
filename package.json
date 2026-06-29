@@ -2,21 +2,13 @@
   "name": "todo-expiry",
   "displayName": "TODO Expiry",
   "description": "Highlight TODO comments with expiry dates — turns green, yellow, then red as the deadline approaches. Zero config. Works in every language.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publisher": "sonu8212",
   "author": {
     "name": "Sonu"
   },
   "license": "MIT",
   "icon": "images/icon.png",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Sonu8212/todo-expiry"
-  },
-  "bugs": {
-    "url": "https://github.com/Sonu8212/todo-expiry/issues"
-  },
-  "homepage": "https://github.com/Sonu8212/todo-expiry#readme",
   "engines": {
     "vscode": "^1.80.0"
   },
