@@ -1,0 +1,42 @@
+{
+  "name": "todo-expiry",
+  "displayName": "TODO Expiry",
+  "description": "TODO comments that turn green → yellow → red as their due date approaches. Works in every language, zero config.",
+  "version": "0.0.1",
+  "publisher": "sonu8212",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["Other"],
+  "keywords": ["todo", "expiry", "deadline", "reminder", "highlight"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "TODO Expiry",
+      "properties": {
+        "todoExpiry.warningDays": {
+          "type": "number",
+          "default": 7,
+          "description": "Days before due date when TODO turns yellow (warning)."
+        },
+        "todoExpiry.pattern": {
+          "type": "string",
+          "default": "TODO\\[(\\d{4}-\\d{2}-\\d{2})\\]",
+          "description": "Regex pattern to match TODO date. Default matches TODO[2026-07-10]."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0"
+  }
+}
