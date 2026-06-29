@@ -33,8 +33,6 @@ Add a date to your TODO. TODO Expiry does the rest.
 // TODO[2025-01-01]: Remove deprecated endpoint  ← 🔴 Red — overdue!
 ```
 
-![TODO Expiry Demo](images/screenshot.png)
-
 ---
 
 ## Features
