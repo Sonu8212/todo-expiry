@@ -36,47 +36,63 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = activate;
 exports.deactivate = deactivate;
 const vscode = __importStar(require("vscode"));
-// Decoration types — created once, reused across all updates
 let greenDecoration;
 let yellowDecoration;
 let redDecoration;
 let statusBarItem;
 function activate(context) {
+    vscode.window.showInformationMessage('✅ TODO Expiry activated!');
     greenDecoration = vscode.window.createTextEditorDecorationType({
-        backgroundColor: 'rgba(0, 200, 100, 0.15)',
-        border: '1px solid rgba(0, 200, 100, 0.5)',
-        borderRadius: '3px',
+        backgroundColor: 'rgba(0, 200, 100, 0.4)',
+        border: '2px solid lime',
+        color: '#ccffcc',
+        overviewRulerColor: 'lime',
+        overviewRulerLane: vscode.OverviewRulerLane.Right,
     });
     yellowDecoration = vscode.window.createTextEditorDecorationType({
-        backgroundColor: 'rgba(255, 200, 0, 0.2)',
-        border: '1px solid rgba(255, 200, 0, 0.6)',
-        borderRadius: '3px',
+        backgroundColor: 'rgba(255, 200, 0, 0.4)',
+        border: '2px solid yellow',
+        color: '#ffffaa',
+        overviewRulerColor: 'yellow',
+        overviewRulerLane: vscode.OverviewRulerLane.Right,
     });
     redDecoration = vscode.window.createTextEditorDecorationType({
-        backgroundColor: 'rgba(255, 60, 60, 0.2)',
-        border: '1px solid rgba(255, 60, 60, 0.7)',
-        borderRadius: '3px',
+        backgroundColor: 'rgba(255, 0, 0, 0.5)',
+        border: '2px solid red',
+        color: '#ffaaaa',
+        overviewRulerColor: 'red',
+        overviewRulerLane: vscode.OverviewRulerLane.Right,
     });
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+    statusBarItem.command = 'todoExpiry.refresh';
     context.subscriptions.push(statusBarItem);
-    // Run on the active editor immediately + whenever it changes
-    if (vscode.window.activeTextEditor) {
-        updateDecorations(vscode.window.activeTextEditor);
-    }
+    // Register manual refresh command
+    const refreshCmd = vscode.commands.registerCommand('todoExpiry.refresh', () => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            vscode.window.showInformationMessage(`Refreshing decorations on: ${editor.document.fileName}`);
+            updateDecorations(editor);
+        }
+        else {
+            vscode.window.showWarningMessage('No active editor found.');
+        }
+    });
+    context.subscriptions.push(refreshCmd);
+    // Apply to all visible editors now
+    vscode.window.visibleTextEditors.forEach(e => updateDecorations(e));
+    setTimeout(() => {
+        vscode.window.visibleTextEditors.forEach(e => updateDecorations(e));
+    }, 1000);
     context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(editor => {
         if (editor) {
             updateDecorations(editor);
         }
+    }), vscode.window.onDidChangeVisibleTextEditors(editors => {
+        editors.forEach(e => updateDecorations(e));
     }), vscode.workspace.onDidChangeTextDocument(event => {
         const editor = vscode.window.activeTextEditor;
         if (editor && event.document === editor.document) {
             updateDecorations(editor);
-        }
-    }), vscode.workspace.onDidChangeConfiguration(e => {
-        if (e.affectsConfiguration('todoExpiry')) {
-            if (vscode.window.activeTextEditor) {
-                updateDecorations(vscode.window.activeTextEditor);
-            }
         }
     }));
 }
@@ -87,39 +103,34 @@ function getDaysLeft(dateStr) {
     today.setHours(0, 0, 0, 0);
     return Math.ceil((due.getTime() - today.getTime()) / 86400000);
 }
-function buildHoverMessage(daysLeft, dateStr) {
-    const md = new vscode.MarkdownString();
-    if (daysLeft > 0) {
-        md.appendMarkdown(`**TODO Expiry** — Due \`${dateStr}\`\n\n⏳ **${daysLeft} day${daysLeft === 1 ? '' : 's'} remaining**`);
-    }
-    else if (daysLeft === 0) {
-        md.appendMarkdown(`**TODO Expiry** — Due \`${dateStr}\`\n\n🔴 **Due today!**`);
-    }
-    else {
-        md.appendMarkdown(`**TODO Expiry** — Due \`${dateStr}\`\n\n🚨 **Overdue by ${Math.abs(daysLeft)} day${Math.abs(daysLeft) === 1 ? '' : 's'}**`);
-    }
-    return md;
-}
 function updateDecorations(editor) {
-    const config = vscode.workspace.getConfiguration('todoExpiry');
-    const warningDays = config.get('warningDays', 7);
-    const patternStr = config.get('pattern', 'TODO\\[(\\d{4}-\\d{2}-\\d{2})\\]');
-    const regex = new RegExp(patternStr, 'g');
+    const TODO_REGEX = /TODO\[(\d{4}-\d{2}-\d{2})\]/g;
     const text = editor.document.getText();
     const greens = [];
     const yellows = [];
     const reds = [];
-    let overdueCount = 0;
     let match;
-    while ((match = regex.exec(text)) !== null) {
+    while ((match = TODO_REGEX.exec(text)) !== null) {
         const dateStr = match[1];
         const daysLeft = getDaysLeft(dateStr);
         const startPos = editor.document.positionAt(match.index);
         const endPos = editor.document.positionAt(match.index + match[0].length);
         const range = new vscode.Range(startPos, endPos);
-        const hoverMessage = buildHoverMessage(daysLeft, dateStr);
-        const decoration = { range, hoverMessage };
-        if (daysLeft > warningDays) {
+        let hoverMsg;
+        if (daysLeft < 0) {
+            hoverMsg = `🚨 Overdue by ${Math.abs(daysLeft)} days`;
+        }
+        else if (daysLeft === 0) {
+            hoverMsg = `🔴 Due today!`;
+        }
+        else {
+            hoverMsg = `⏳ ${daysLeft} days remaining`;
+        }
+        const decoration = {
+            range,
+            hoverMessage: new vscode.MarkdownString(`**TODO Expiry** — \`${dateStr}\`\n\n${hoverMsg}`),
+        };
+        if (daysLeft > 7) {
             greens.push(decoration);
         }
         else if (daysLeft > 0) {
@@ -127,13 +138,13 @@ function updateDecorations(editor) {
         }
         else {
             reds.push(decoration);
-            overdueCount++;
         }
     }
     editor.setDecorations(greenDecoration, greens);
     editor.setDecorations(yellowDecoration, yellows);
     editor.setDecorations(redDecoration, reds);
     const total = greens.length + yellows.length + reds.length;
+    const overdueCount = reds.length;
     if (total === 0) {
         statusBarItem.hide();
     }
@@ -149,7 +160,7 @@ function updateDecorations(editor) {
             parts.push(`$(check) ${greens.length} on track`);
         }
         statusBarItem.text = `TODO: ${parts.join('  ')}`;
-        statusBarItem.tooltip = `TODO Expiry: ${total} dated TODO${total === 1 ? '' : 's'} in this file`;
+        statusBarItem.tooltip = `Click to refresh TODO Expiry`;
         statusBarItem.show();
     }
 }
